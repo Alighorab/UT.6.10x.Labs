@@ -1,5 +1,8 @@
 #include "tm4c123gh6pm.h"
 
+#define GREEN 0x08
+#define RED   0x02
+
 void PortF_Init(void);
 void Delay1ms(unsigned long msec);
 void WaitForASLow(void);
@@ -9,21 +12,20 @@ void ClearVT(void);
 void SetReady(void);
 void ClearReady(void);
 
-// a) Ready signal goes high
-// b) wait for switch to be pressed
-// c) Ready signal goes low
-// d) wait 10ms
-// e) wait for switch to be released
-// f) wait 250ms
-// g) VT signal goes high
-// h) wait 250ms
-// i) VT signal goes low
-
 int
 main(void)
 {
     PortF_Init();
     while (1) {
+        SetReady();
+        WaitForASLow();
+        ClearReady();
+        Delay1ms(10);
+        WaitForASHigh();
+        Delay1ms(250);
+        SetVT();
+        Delay1ms(250);
+        ClearVT();
     }
 }
 
@@ -58,7 +60,9 @@ PortF_Init(void)
 void
 WaitForASLow(void)
 {
-
+    while (GPIO_PORTF_DATA_R & 0x10) {
+        ;
+    }
 }
 
 /* Subroutine reads AS input and waits for signal to be high */
@@ -69,7 +73,9 @@ WaitForASLow(void)
 void
 WaitForASHigh(void)
 {
-    
+    while (!(GPIO_PORTF_DATA_R & 0x10)) {
+        ;
+    }
 }
 
 /* Subroutine sets VT high */
@@ -79,7 +85,7 @@ WaitForASHigh(void)
 void
 SetVT(void)
 {
-    
+    GPIO_PORTF_DATA_R |= RED;
 }
 
 /* Subroutine clears VT low */
@@ -89,7 +95,7 @@ SetVT(void)
 void
 ClearVT(void)
 {
-    
+    GPIO_PORTF_DATA_R &= ~RED;
 }
 
 /* Subroutine sets Ready high */
@@ -99,7 +105,7 @@ ClearVT(void)
 void
 SetReady(void)
 {
-    
+    GPIO_PORTF_DATA_R |= GREEN;
 }
 
 /* Subroutine clears Ready low */
@@ -109,7 +115,7 @@ SetReady(void)
 void
 ClearReady(void)
 {
-    
+    GPIO_PORTF_DATA_R &= ~GREEN;
 }
 
 /* Subroutine to delay in units of milliseconds */
@@ -119,6 +125,39 @@ ClearReady(void)
 void
 Delay1ms(unsigned long msec)
 {
-
+    while (msec > 0) {
+        volatile unsigned long count = 4000;
+        while (count > 0) {
+            count--;
+        }
+        msec--;
+    }
 }
 
+// Delay1ms disassembly
+
+// 00000324 <Delay1ms>:
+//  324:	sub	sp, #8
+//  326:	cbz	r0, 33c <Delay1ms+0x18>
+//  328:	movw	r3, #3333	; 0xd05
+// -------------- Inner Loop --------------
+//  32c:	str	r3, [sp, #4]            ; takes 1 cycle to execute
+//  32e:	ldr	r3, [sp, #4]            ; takes 2 to 5 cycles to execute
+//  330:	cbz	r3, 338 <Delay1ms+0x14> ; takes 1 to 4 cycles to execute
+//  332:	ldr	r3, [sp, #4]            ; takes 2 to 5 cycles to execute
+//  334:	subs	r3, #1              ; takes 1 cycle to execute
+//  336:	b.n	32c <Delay1ms+0x8>      ; takes 1 to 4 cycles to execute
+// ----------------------------------------
+//  338:	subs	r0, #1
+//  33a:	b.n	326 <Delay1ms+0x2>
+//  33c:	add	sp, #8
+//  33e:	bx	lr
+//
+
+// To calculate 1ms delay:
+// 1. T = 1/80,000,000 = 1.25 * 10^-8 s
+// 2. Inner loop takes at most
+//     L = 1 + 5 + 4 + 5 + 1 + 4 = 20 cycles
+// 3. We need this peice of code to take 1 ms 
+//     i = L * T = 20 * (1.25 * 10^-8) = 2.5 * 10^-7 s
+//     1ms = (1/1000) / i = (1 / 1000) / (2.5 * 10^-7) = 4000 cycles
