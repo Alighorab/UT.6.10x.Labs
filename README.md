@@ -25,9 +25,9 @@ to be able to access the LaunchPad.
     make
     make upload
     ````
-- To debug the code, run the following command:
+- To debug the code, run the following commands:
     ````
     cd <lab_name>
     code .
     ````
-    - Hit <F5> to start the debugger.
+    - Hit `F5` to start the debugger.
