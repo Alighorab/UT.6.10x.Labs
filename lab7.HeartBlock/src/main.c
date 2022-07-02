@@ -3,29 +3,29 @@
 #define GREEN 0x08
 #define RED   0x02
 
-void PortF_Init(void);
-void Delay1ms(unsigned long msec);
-void WaitForASLow(void);
-void WaitForASHigh(void);
-void SetVT(void);
-void ClearVT(void);
-void SetReady(void);
-void ClearReady(void);
+void PORTF_init(void);
+void delay_1ms(unsigned long msec);
+void wait_for_as_low(void);
+void wait_for_as_high(void);
+void set_vt(void);
+void clear_vt(void);
+void set_ready(void);
+void clear_ready(void);
 
 int
 main(void)
 {
-    PortF_Init();
+    PORTF_init();
     while (1) {
-        SetReady();
-        WaitForASLow();
-        ClearReady();
-        Delay1ms(10);
-        WaitForASHigh();
-        Delay1ms(250);
-        SetVT();
-        Delay1ms(250);
-        ClearVT();
+        set_ready();
+        wait_for_as_low();
+        clear_ready();
+        delay_1ms(10);
+        wait_for_as_high();
+        delay_1ms(250);
+        set_vt();
+        delay_1ms(250);
+        clear_vt();
     }
 }
 
@@ -35,7 +35,7 @@ main(void)
 /* Outputs: None */
 /* Notes: ... */
 void
-PortF_Init(void)
+PORTF_init(void)
 { 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
@@ -58,7 +58,7 @@ PortF_Init(void)
 /* Inputs:  None */
 /* Outputs: None */
 void
-WaitForASLow(void)
+wait_for_as_low(void)
 {
     while (GPIO_PORTF_DATA_R & 0x10) {
         ;
@@ -71,7 +71,7 @@ WaitForASLow(void)
 /* Inputs:  None */
 /* Outputs: None */
 void
-WaitForASHigh(void)
+wait_for_as_high(void)
 {
     while (!(GPIO_PORTF_DATA_R & 0x10)) {
         ;
@@ -83,7 +83,7 @@ WaitForASHigh(void)
 /* Outputs: None */
 /* Notes:   friendly means it does not affect other bits in the port */
 void
-SetVT(void)
+set_vt(void)
 {
     GPIO_PORTF_DATA_R |= RED;
 }
@@ -93,7 +93,7 @@ SetVT(void)
 /* Outputs: None */
 /* Notes:   friendly means it does not affect other bits in the port */
 void
-ClearVT(void)
+clear_vt(void)
 {
     GPIO_PORTF_DATA_R &= ~RED;
 }
@@ -103,7 +103,7 @@ ClearVT(void)
 /* Outputs: None */
 /* Notes:   friendly means it does not affect other bits in the port */
 void
-SetReady(void)
+set_ready(void)
 {
     GPIO_PORTF_DATA_R |= GREEN;
 }
@@ -113,7 +113,7 @@ SetReady(void)
 /* Outputs: None */
 /* Notes:   friendly means it does not affect other bits in the port */
 void
-ClearReady(void)
+clear_ready(void)
 {
     GPIO_PORTF_DATA_R &= ~GREEN;
 }
@@ -123,7 +123,7 @@ ClearReady(void)
 /* Outputs: None */
 /* Notes:   assumes 80 MHz clock */
 void
-Delay1ms(unsigned long msec)
+delay_1ms(unsigned long msec)
 {
     while (msec > 0) {
         volatile unsigned long count = 2000;
