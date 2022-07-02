@@ -126,38 +126,10 @@ void
 Delay1ms(unsigned long msec)
 {
     while (msec > 0) {
-        volatile unsigned long count = 4000;
+        volatile unsigned long count = 2000;
         while (count > 0) {
             count--;
         }
         msec--;
     }
 }
-
-// Delay1ms disassembly
-
-// 00000324 <Delay1ms>:
-//  324:	sub	sp, #8
-//  326:	cbz	r0, 33c <Delay1ms+0x18>
-//  328:	movw	r3, #3333	; 0xd05
-// -------------- Inner Loop --------------
-//  32c:	str	r3, [sp, #4]            ; takes 1 cycle to execute
-//  32e:	ldr	r3, [sp, #4]            ; takes 2 to 5 cycles to execute
-//  330:	cbz	r3, 338 <Delay1ms+0x14> ; takes 1 to 4 cycles to execute
-//  332:	ldr	r3, [sp, #4]            ; takes 2 to 5 cycles to execute
-//  334:	subs	r3, #1              ; takes 1 cycle to execute
-//  336:	b.n	32c <Delay1ms+0x8>      ; takes 1 to 4 cycles to execute
-// ----------------------------------------
-//  338:	subs	r0, #1
-//  33a:	b.n	326 <Delay1ms+0x2>
-//  33c:	add	sp, #8
-//  33e:	bx	lr
-//
-
-// To calculate 1ms delay:
-// 1. T = 1/80,000,000 = 1.25 * 10^-8 s
-// 2. Inner loop takes at most
-//     L = 1 + 5 + 4 + 5 + 1 + 4 = 20 cycles
-// 3. We need this peice of code to take 1 ms 
-//     i = L * T = 20 * (1.25 * 10^-8) = 2.5 * 10^-7 s
-//     1ms = (1/1000) / i = (1 / 1000) / (2.5 * 10^-7) = 4000 cycles
