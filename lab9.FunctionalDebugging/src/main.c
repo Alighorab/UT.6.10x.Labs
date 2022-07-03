@@ -10,33 +10,45 @@
 #define OFF 0x00
 
 void PORTF_init(void);
-void systic_init(void);
 void delay(void);
+void save(unsigned char repeat);
 
-unsigned long time[50];
 unsigned long data[50];
-unsigned long led;
+unsigned long sw1, sw2;
 
 int
 main(void)
 {  
-    unsigned long i, last, now;
     PORTF_init();
-    systic_init();
-    i = 0;
-    last = NVIC_ST_CURRENT_R;
-    while(1){
-        led = GPIO_PORTF_DATA_R;
-        led = led ^ RED;
-        GPIO_PORTF_DATA_R = led;
-        if (i < 50) {
-            now = NVIC_ST_CURRENT_R;
-            time[i] = (last - now) & 0x00FFFFFF;
-            data[i] = GPIO_PORTF_DATA_R&0x02;
-            last = now;
-            i++;
-        }
+    while (1) {
+        sw1 = GPIO_PORTF_DATA_R & 0x10;
+        sw2 = GPIO_PORTF_DATA_R & 0x01;
+        if (!sw1 || !sw2) {
+            GPIO_PORTF_DATA_R ^= RED; 
+            save(1);
+        } else {
+            GPIO_PORTF_DATA_R &= ~(0x02);
+            save(0);
+        } 
         delay();
+    }
+}
+
+/* Save state of PF4,PF1,PF0 to data array */
+/* If repeat is 1, then record every call */
+/* else if equals zero, record one time untile a call to save(1) */
+void
+save(unsigned char repeat)
+{
+    static unsigned char prev_call = 1;
+    static unsigned char i = 0;
+    if (i < 50) {
+        if (prev_call == 0 && repeat == 0) {
+            return;
+        }
+        data[i] = GPIO_PORTF_DATA_R & 0x13;
+        i++;
+        prev_call = repeat;
     }
 }
 
@@ -60,19 +72,10 @@ PORTF_init(void)
 }
 
 void
-systic_init(void)
-{
-    NVIC_ST_CTRL_R = 0;               /* disable SysTick during setup */
-    NVIC_ST_RELOAD_R = 0x00FFFFFF;    /* maximum reload value */
-    NVIC_ST_CURRENT_R = 0;            /* any write to current clears it */
-    NVIC_ST_CTRL_R = 0x00000005;      /* enable SysTick with core clock */
-}
-
-void
 delay(void)
 {
     volatile unsigned long ttime;
-    ttime = 160000; // 0.1sec
+    ttime = 80000; // 0.05sec
     while (ttime) {
         ttime--;
     }
