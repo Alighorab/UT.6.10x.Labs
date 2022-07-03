@@ -6,7 +6,9 @@ void LED_on(void);
 void LED_toggle(void);
 void delay_ms(unsigned long msec);
 
-int main(void) {
+int
+main(void) 
+{
     unsigned long sw;
     PORTE_init();
     LED_on();
@@ -64,7 +66,7 @@ void
 delay_ms(unsigned long msec)
 {
     while (msec > 0) {
-        volatile unsigned long count = 2000;
+        volatile unsigned long count = 1600; // 0.1ms
         while (count > 0) {
             count--;
         }
