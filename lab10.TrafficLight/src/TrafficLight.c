@@ -32,7 +32,7 @@ main(void)
 
 
 static void
-system_out(StateType s)
+system_out(unsigned long s)
 {
     unsigned long red, green, out;
     red = (s & 0x01) << 1;

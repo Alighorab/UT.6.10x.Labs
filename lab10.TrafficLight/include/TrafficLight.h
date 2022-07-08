@@ -12,29 +12,29 @@
 #define WALK_RED   0x91
 
 typedef enum StateType {
-    ST_GO_SOUTH   = 0,
-    ST_WAIT_SOUTH = 1,
-    ST_GO_EAST    = 2,
-    ST_WAIT_EAST  = 3,
-    ST_WALK_GREEN = 4,
-    ST_WALK_RED1  = 5,
-    ST_WALK_OFF1  = 6,
-    ST_WALK_RED2  = 7,
-    ST_WALK_OFF2  = 8,
-    ST_WALK_RED3  = 9,
-    ST_WALK_OFF3  = 10,
-    ST_WALK_RED   = 11
+    ST_GO_SOUTH = 0,
+    ST_WAIT_SOUTH,
+    ST_GO_EAST,
+    ST_WAIT_EAST,
+    ST_WALK_GREEN,
+    ST_WALK_RED1,
+    ST_WALK_OFF1,
+    ST_WALK_RED2,
+    ST_WALK_OFF2,
+    ST_WALK_RED3,
+    ST_WALK_OFF3,
+    ST_WALK_RED
 } StateType;
 
 typedef enum EventType {
-    EV_NO_MOVEMENT  = 0b000,
-    EV_CARS_EAST    = 0b001,
-    EV_CARS_SOUTH   = 0b010,
-    EV_BOTH_WAYS    = 0b011,
-    EV_WALK_NO_CARS = 0b100,
-    EV_WALK_EAST    = 0b101,
-    EV_WALK_NORTH   = 0b110,
-    EV_ALL          = 0b111
+    EV_NO_MOVEMENT  = 0,
+    EV_CARS_EAST,
+    EV_CARS_SOUTH,
+    EV_BOTH_WAYS,
+    EV_WALK_NO_CARS,
+    EV_WALK_EAST,
+    EV_WALK_NORTH,
+    EV_ALL
 } EventType;
 
 typedef struct TransMatrix {
