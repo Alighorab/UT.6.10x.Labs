@@ -1,4 +1,4 @@
-## UT.6.10x Embedded Systems: Shape the World Labs
+## UTAustinX UT.6.10x: Embedded Systems - Shape The World: Microcontroller Input/Output Labs
 
 ### Description
 - This is my solution to the 
