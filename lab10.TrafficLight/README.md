@@ -13,4 +13,4 @@ and `debugging real-time systems`.
 `six LEDs`, and `six 470Ω resistors`.
 
 ### A Working Lab 10
-- here is a [video](https://youtube.com/shorts/rIM9beqi95c?feature=share) of the lab on the real board.
+- Here is a [video](https://youtube.com/shorts/rIM9beqi95c?feature=share) of the lab on the real board.
