@@ -190,12 +190,8 @@ PLL_init(void)
 void
 PortF_init(void)
 { 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x00000020;
-    delay = SYSCTL_RCGC2_R;
-#pragma GCC diagnostic pop
+    while((SYSCTL_PRGPIO_R&0x00000020) == 0);
     GPIO_PORTF_LOCK_R = 0x4C4F434B;
     GPIO_PORTF_CR_R = 0x1F;
     GPIO_PORTF_AMSEL_R = 0x00;
@@ -208,12 +204,8 @@ PortF_init(void)
 void
 PortE_init(void)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x00000010;
-    delay = SYSCTL_RCGC2_R;
-#pragma GCC diagnostic pop
+    while((SYSCTL_PRGPIO_R&0x00000010) == 0);
     GPIO_PORTE_LOCK_R = 0x4C4F434B;
     GPIO_PORTE_CR_R = 0x1F;
     GPIO_PORTE_AMSEL_R = 0x00;
@@ -227,12 +219,8 @@ PortE_init(void)
 void
 PortB_init(void)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x00000002;
-    delay = SYSCTL_RCGC2_R;
-#pragma GCC diagnostic pop
+    while((SYSCTL_PRGPIO_R&0x00000002) == 0);
     GPIO_PORTB_LOCK_R = 0x4C4F434B;
     GPIO_PORTB_CR_R = 0xFF;
     GPIO_PORTB_AMSEL_R = 0x00;

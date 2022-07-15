@@ -37,19 +37,15 @@ main(void)
 void
 PORTF_init(void)
 { 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
-    SYSCTL_RCGC2_R |= 0x00000020;      // 1) F clock
-    delay = SYSCTL_RCGC2_R;            // delay to allow clock to stabilize     
-#pragma GCC diagnostic pop
-    GPIO_PORTF_AMSEL_R &= 0x00;        // 2) disable analog function
-    GPIO_PORTF_PCTL_R &= 0x00000000;   // 3) GPIO clear bit PCTL  
-    GPIO_PORTF_DIR_R &= ~0x10;         // 4.1) PF4 input,
-    GPIO_PORTF_DIR_R |= 0x0E;          // 4.2) PF3,2,1 output  
-    GPIO_PORTF_AFSEL_R &= 0x00;        // 5) no alternate function
-    GPIO_PORTF_PUR_R |= 0x10;          // 6) enable pullup resistor on PF4       
-    GPIO_PORTF_DEN_R |= 0x1E;          // 7) enable digital pins PF4-PF1
+    SYSCTL_RCGC2_R |= 0x00000020;      /* 1) F clock */
+    while ((SYSCTL_PRGPIO_R & 0x00000020) == 0); /* wait for PORTF to be ready */
+    GPIO_PORTF_AMSEL_R &= 0x00;        /* 2) disable analog function */
+    GPIO_PORTF_PCTL_R &= 0x00000000;   /* 3) GPIO clear bit PCTL */
+    GPIO_PORTF_DIR_R &= ~0x10;         /* 4.1) PF4 input, */
+    GPIO_PORTF_DIR_R |= 0x0E;          /* 4.2) PF3,2,1 output */
+    GPIO_PORTF_AFSEL_R &= 0x00;        /* 5) no alternate function */
+    GPIO_PORTF_PUR_R |= 0x10;          /* 6) enable pullup resistor on PF4  */
+    GPIO_PORTF_DEN_R |= 0x1E;          /* 7) enable digital pins PF4-PF1 */
 }
 
 /* Subroutine reads AS input and waits for signal to be low */

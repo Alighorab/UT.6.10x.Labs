@@ -25,13 +25,8 @@ main(void)
 void
 PORTF_init(void)
 {
-    /* #pragma to ignre a warning */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x00000020;    /* 1) F clock */
-    delay = SYSCTL_RCGC2_R;          /* delay */
-#pragma GCC diagnostic pop
+    while((SYSCTL_PRGPIO_R&0x20) == 0); /* wait for GPIO port F to be ready */
     GPIO_PORTF_LOCK_R = 0x4C4F434B;  /* 2) unlock PortF PF0 */
     GPIO_PORTF_CR_R = 0x1F;          /* allow changes to PF4-0 */
     GPIO_PORTF_AMSEL_R = 0x00;       /* 3) disable analog function */

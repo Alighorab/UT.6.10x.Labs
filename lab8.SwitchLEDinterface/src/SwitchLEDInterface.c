@@ -29,12 +29,8 @@ main(void)
 void
 PORTE_init(void)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x10;
-    delay = SYSCTL_RCGCGPIO_R;
-#pragma GCC diagnostic pop
+    while ((SYSCTL_PRGPIO_R & 0x10) == 0) {}
     GPIO_PORTE_AMSEL_R &= ~0x03;
     GPIO_PORTE_PCTL_R = 0x00000000;
     GPIO_PORTE_DIR_R &= ~0x01;
