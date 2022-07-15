@@ -1,8 +1,6 @@
 #include "tm4c123gh6pm.h"
 #include "TrafficLight.h"
 
-#define LIGHTS_DELAY    50
-#define FLASHING_DELAY  25
 
 void SysTick_init(void);
 void SysTick_wait(unsigned long delay);
@@ -17,16 +15,10 @@ main(void)
 {
     system_init();
 	while (1) {
-        unsigned long i;
         traffic_light[state].state_function();
+        SysTick_wait_10ms(traffic_light[state].delay);
         system_read_event();
-        for (i = 0; i < TRANS_MATRIX_SIZE; i++) {
-            if (trans_matrix[i].current_state == state && 
-                    trans_matrix[i].event == event) {
-                state = trans_matrix[i].next_state;
-                break;
-            }
-        }
+        state = trans_matrix[state][event].next_state;
 	}
 }
 
@@ -57,84 +49,72 @@ void
 system_go_south(void)
 {
     system_out(GO_SOUTH);
-    SysTick_wait_10ms(LIGHTS_DELAY);
 }
 
 void
 system_wait_south(void)
 {
     system_out(WAIT_SOUTH);
-    SysTick_wait_10ms(LIGHTS_DELAY);
 }
 
 void
 system_go_east(void)
 {
     system_out(GO_EAST);
-    SysTick_wait_10ms(LIGHTS_DELAY);
 }
 
 void
 system_wait_east(void)
 {
     system_out(WAIT_EAST);
-    SysTick_wait_10ms(LIGHTS_DELAY);
 }
 
 void
 system_walk_green(void)
 {
     system_out(WALK_GREEN);
-    SysTick_wait_10ms(LIGHTS_DELAY);
 }
 
 void
 system_walk_red1(void)
 {
     system_out(WALK_RED1);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_off1(void)
 {
     system_out(WALK_OFF1);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_red2(void)
 {
     system_out(WALK_RED2);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_off2(void)
 {
     system_out(WALK_OFF2);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_red3(void)
 {
     system_out(WALK_RED3);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_off3(void)
 {
     system_out(WALK_OFF3);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
 system_walk_red(void)
 {
     system_out(WALK_RED);
-    SysTick_wait_10ms(FLASHING_DELAY);
 }
 
 void
