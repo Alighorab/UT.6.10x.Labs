@@ -15,7 +15,7 @@ main(void)
 {
     system_init();
 	while (1) {
-        traffic_light[state].state_function();
+        traffic_light[state].state_function(traffic_light[state].out);
         SysTick_wait_10ms(traffic_light[state].delay);
         system_read_event();
         state = trans_matrix[state][event].next_state;
@@ -23,7 +23,7 @@ main(void)
 }
 
 
-static void
+void
 system_out(unsigned long s)
 {
     unsigned long red, green, out;
@@ -43,78 +43,6 @@ system_init(void)
     PortE_init();
     PortF_init();
     SysTick_init();
-}
-
-void
-system_go_south(void)
-{
-    system_out(GO_SOUTH);
-}
-
-void
-system_wait_south(void)
-{
-    system_out(WAIT_SOUTH);
-}
-
-void
-system_go_east(void)
-{
-    system_out(GO_EAST);
-}
-
-void
-system_wait_east(void)
-{
-    system_out(WAIT_EAST);
-}
-
-void
-system_walk_green(void)
-{
-    system_out(WALK_GREEN);
-}
-
-void
-system_walk_red1(void)
-{
-    system_out(WALK_RED1);
-}
-
-void
-system_walk_off1(void)
-{
-    system_out(WALK_OFF1);
-}
-
-void
-system_walk_red2(void)
-{
-    system_out(WALK_RED2);
-}
-
-void
-system_walk_off2(void)
-{
-    system_out(WALK_OFF2);
-}
-
-void
-system_walk_red3(void)
-{
-    system_out(WALK_RED3);
-}
-
-void
-system_walk_off3(void)
-{
-    system_out(WALK_OFF3);
-}
-
-void
-system_walk_red(void)
-{
-    system_out(WALK_RED);
 }
 
 void

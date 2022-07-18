@@ -48,23 +48,13 @@ typedef struct TransMatrix {
 
 typedef struct StateMachine {
     StateType state;
-    void (*state_function)(void);
+    void (*state_function)(unsigned long);
+    unsigned long out;
     unsigned long delay;
 } StateMachine;
 
 void system_init(void);
-void system_go_south(void);
-void system_wait_south(void);
-void system_go_east(void);
-void system_wait_east(void);
-void system_walk_green(void);
-void system_walk_red1(void);
-void system_walk_off1(void);
-void system_walk_red2(void);
-void system_walk_off2(void);
-void system_walk_red3(void);
-void system_walk_off3(void);
-void system_walk_red(void);
+void system_out(unsigned long out);
 void system_read_event(void);
 
 StateType state = ST_GO_SOUTH;
@@ -220,16 +210,16 @@ TransMatrix *trans_matrix[] = {
     walk_red_trans_matrix
 };
 StateMachine traffic_light[] = {
-    {ST_GO_SOUTH,       system_go_south,        LIGHTS_DELAY},
-    {ST_WAIT_SOUTH,     system_wait_south,      LIGHTS_DELAY},
-    {ST_GO_EAST,        system_go_east,         LIGHTS_DELAY},
-    {ST_WAIT_EAST,      system_wait_east,       LIGHTS_DELAY},
-    {ST_WALK_GREEN,     system_walk_green,      LIGHTS_DELAY},
-    {ST_WALK_RED1,      system_walk_red1,       FLASHING_DELAY},
-    {ST_WALK_OFF1,      system_walk_off1,       FLASHING_DELAY},
-    {ST_WALK_RED2,      system_walk_red2,       FLASHING_DELAY},
-    {ST_WALK_OFF2,      system_walk_off2,       FLASHING_DELAY},
-    {ST_WALK_RED3,      system_walk_red3,       FLASHING_DELAY},
-    {ST_WALK_OFF3,      system_walk_off3,       FLASHING_DELAY},
-    {ST_WALK_RED,       system_walk_red,        LIGHTS_DELAY},
+    {ST_GO_SOUTH,       system_out,     GO_SOUTH,       LIGHTS_DELAY},
+    {ST_WAIT_SOUTH,     system_out,     WAIT_SOUTH,     LIGHTS_DELAY},
+    {ST_GO_EAST,        system_out,     GO_EAST,        LIGHTS_DELAY},
+    {ST_WAIT_EAST,      system_out,     WAIT_EAST,      LIGHTS_DELAY},
+    {ST_WALK_GREEN,     system_out,     WALK_GREEN,     LIGHTS_DELAY},
+    {ST_WALK_RED1,      system_out,     WALK_RED1,      FLASHING_DELAY},
+    {ST_WALK_OFF1,      system_out,     WALK_OFF1,      FLASHING_DELAY},
+    {ST_WALK_RED2,      system_out,     WALK_RED2,      FLASHING_DELAY},
+    {ST_WALK_OFF2,      system_out,     WALK_OFF2,      FLASHING_DELAY},
+    {ST_WALK_RED3,      system_out,     WALK_RED3,      FLASHING_DELAY},
+    {ST_WALK_OFF3,      system_out,     WALK_OFF3,      FLASHING_DELAY},
+    {ST_WALK_RED,       system_out,     WALK_RED,       LIGHTS_DELAY},
 };
