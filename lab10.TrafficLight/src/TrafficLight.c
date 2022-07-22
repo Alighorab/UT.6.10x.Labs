@@ -2,9 +2,6 @@
 #include "TrafficLight.h"
 
 
-void SysTick_init(void);
-void SysTick_wait(unsigned long delay);
-void SysTick_wait_10ms(unsigned long delay);
 void PLL_init(void);
 void PortB_init(void);
 void PortE_init(void);
@@ -16,7 +13,7 @@ main(void)
     system_init();
 	while (1) {
         traffic_light[state].state_function(traffic_light[state].out);
-        SysTick_wait_10ms(traffic_light[state].delay);
+        traffic_light[state].wait(traffic_light[state].delay);
         system_read_event();
         state = trans_matrix[state][event].next_state;
 	}

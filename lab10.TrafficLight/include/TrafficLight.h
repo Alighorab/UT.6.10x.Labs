@@ -41,7 +41,6 @@ typedef enum EventType {
 } EventType;
 
 typedef struct TransMatrix {
-    StateType current_state;
     EventType event;
     StateType next_state;
 } TransMatrix;
@@ -50,149 +49,153 @@ typedef struct StateMachine {
     StateType state;
     void (*state_function)(unsigned long);
     unsigned long out;
+    void (*wait)(unsigned long);
     unsigned long delay;
 } StateMachine;
 
 void system_init(void);
 void system_out(unsigned long out);
 void system_read_event(void);
+void SysTick_init(void);
+void SysTick_wait(unsigned long delay);
+void SysTick_wait_10ms(unsigned long delay);
 
 StateType state = ST_GO_SOUTH;
 EventType event = EV_NO_MOVEMENT;
 
 TransMatrix go_south_trans_matrix[] = {
-    {ST_GO_SOUTH,       EV_NO_MOVEMENT,     ST_GO_SOUTH},
-    {ST_GO_SOUTH,       EV_CARS_EAST,       ST_WAIT_SOUTH},
-    {ST_GO_SOUTH,       EV_CARS_SOUTH,      ST_GO_SOUTH},
-    {ST_GO_SOUTH,       EV_BOTH_WAYS,       ST_WAIT_SOUTH},
-    {ST_GO_SOUTH,       EV_WALK_NO_CARS,    ST_WAIT_SOUTH},
-    {ST_GO_SOUTH,       EV_WALK_EAST,       ST_WAIT_SOUTH},
-    {ST_GO_SOUTH,       EV_WALK_SOUTH,      ST_WAIT_SOUTH},
-    {ST_GO_SOUTH,       EV_ALL,             ST_WAIT_SOUTH},
+    {EV_NO_MOVEMENT,     ST_GO_SOUTH},
+    {EV_CARS_EAST,       ST_WAIT_SOUTH},
+    {EV_CARS_SOUTH,      ST_GO_SOUTH},
+    {EV_BOTH_WAYS,       ST_WAIT_SOUTH},
+    {EV_WALK_NO_CARS,    ST_WAIT_SOUTH},
+    {EV_WALK_EAST,       ST_WAIT_SOUTH},
+    {EV_WALK_SOUTH,      ST_WAIT_SOUTH},
+    {EV_ALL,             ST_WAIT_SOUTH},
 };
 
 TransMatrix wait_south_trans_matrix[] = {
-    {ST_WAIT_SOUTH,     EV_NO_MOVEMENT,     ST_GO_EAST},
-    {ST_WAIT_SOUTH,     EV_CARS_EAST,       ST_GO_EAST},
-    {ST_WAIT_SOUTH,     EV_CARS_SOUTH,      ST_GO_EAST},
-    {ST_WAIT_SOUTH,     EV_BOTH_WAYS,       ST_GO_EAST},
-    {ST_WAIT_SOUTH,     EV_WALK_NO_CARS,    ST_WALK_GREEN},
-    {ST_WAIT_SOUTH,     EV_WALK_EAST,       ST_GO_EAST},
-    {ST_WAIT_SOUTH,     EV_WALK_SOUTH,      ST_WALK_GREEN},
-    {ST_WAIT_SOUTH,     EV_ALL,             ST_GO_EAST},
+    {EV_NO_MOVEMENT,     ST_GO_EAST},
+    {EV_CARS_EAST,       ST_GO_EAST},
+    {EV_CARS_SOUTH,      ST_GO_EAST},
+    {EV_BOTH_WAYS,       ST_GO_EAST},
+    {EV_WALK_NO_CARS,    ST_WALK_GREEN},
+    {EV_WALK_EAST,       ST_GO_EAST},
+    {EV_WALK_SOUTH,      ST_WALK_GREEN},
+    {EV_ALL,             ST_GO_EAST},
 };
 
 TransMatrix go_east_trans_matrix[] = {
-    {ST_GO_EAST,        EV_NO_MOVEMENT,     ST_GO_EAST},
-    {ST_GO_EAST,        EV_CARS_EAST,       ST_GO_EAST},
-    {ST_GO_EAST,        EV_CARS_SOUTH,      ST_WAIT_EAST},
-    {ST_GO_EAST,        EV_BOTH_WAYS,       ST_WAIT_EAST},
-    {ST_GO_EAST,        EV_WALK_NO_CARS,    ST_WAIT_EAST},
-    {ST_GO_EAST,        EV_WALK_EAST,       ST_WAIT_EAST},
-    {ST_GO_EAST,        EV_WALK_SOUTH,      ST_WAIT_EAST},
-    {ST_GO_EAST,        EV_ALL,             ST_WAIT_EAST},
+    {EV_NO_MOVEMENT,     ST_GO_EAST},
+    {EV_CARS_EAST,       ST_GO_EAST},
+    {EV_CARS_SOUTH,      ST_WAIT_EAST},
+    {EV_BOTH_WAYS,       ST_WAIT_EAST},
+    {EV_WALK_NO_CARS,    ST_WAIT_EAST},
+    {EV_WALK_EAST,       ST_WAIT_EAST},
+    {EV_WALK_SOUTH,      ST_WAIT_EAST},
+    {EV_ALL,             ST_WAIT_EAST},
 
 };
 
 TransMatrix wait_east_trans_matrix[] = {
-    {ST_WAIT_EAST,      EV_NO_MOVEMENT,     ST_GO_SOUTH},
-    {ST_WAIT_EAST,      EV_CARS_EAST,       ST_GO_SOUTH},
-    {ST_WAIT_EAST,      EV_CARS_SOUTH,      ST_GO_SOUTH},
-    {ST_WAIT_EAST,      EV_BOTH_WAYS,       ST_GO_SOUTH},
-    {ST_WAIT_EAST,      EV_WALK_NO_CARS,    ST_WALK_GREEN},
-    {ST_WAIT_EAST,      EV_WALK_EAST,       ST_WALK_GREEN},
-    {ST_WAIT_EAST,      EV_WALK_SOUTH,      ST_GO_SOUTH},
-    {ST_WAIT_EAST,      EV_ALL,             ST_WALK_GREEN},
+    {EV_NO_MOVEMENT,     ST_GO_SOUTH},
+    {EV_CARS_EAST,       ST_GO_SOUTH},
+    {EV_CARS_SOUTH,      ST_GO_SOUTH},
+    {EV_BOTH_WAYS,       ST_GO_SOUTH},
+    {EV_WALK_NO_CARS,    ST_WALK_GREEN},
+    {EV_WALK_EAST,       ST_WALK_GREEN},
+    {EV_WALK_SOUTH,      ST_GO_SOUTH},
+    {EV_ALL,             ST_WALK_GREEN},
 
 };
 
 TransMatrix walk_green_trans_matrix[] = {
-    {ST_WALK_GREEN,     EV_NO_MOVEMENT,     ST_WALK_GREEN},
-    {ST_WALK_GREEN,     EV_CARS_EAST,       ST_WALK_RED1},
-    {ST_WALK_GREEN,     EV_CARS_SOUTH,      ST_WALK_RED1},
-    {ST_WALK_GREEN,     EV_BOTH_WAYS,       ST_WALK_RED1},
-    {ST_WALK_GREEN,     EV_WALK_NO_CARS,    ST_WALK_GREEN},
-    {ST_WALK_GREEN,     EV_WALK_EAST,       ST_WALK_RED1},
-    {ST_WALK_GREEN,     EV_WALK_SOUTH,      ST_WALK_RED1},
-    {ST_WALK_GREEN,     EV_ALL,             ST_WALK_RED1},
+    {EV_NO_MOVEMENT,     ST_WALK_GREEN},
+    {EV_CARS_EAST,       ST_WALK_RED1},
+    {EV_CARS_SOUTH,      ST_WALK_RED1},
+    {EV_BOTH_WAYS,       ST_WALK_RED1},
+    {EV_WALK_NO_CARS,    ST_WALK_GREEN},
+    {EV_WALK_EAST,       ST_WALK_RED1},
+    {EV_WALK_SOUTH,      ST_WALK_RED1},
+    {EV_ALL,             ST_WALK_RED1},
 };
 
 TransMatrix walk_red1_trans_matrix[] = {
-    {ST_WALK_RED1,      EV_NO_MOVEMENT,     ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_CARS_EAST,       ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_CARS_SOUTH,      ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_BOTH_WAYS,       ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_WALK_NO_CARS,    ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_WALK_EAST,       ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_WALK_SOUTH,      ST_WALK_OFF1},
-    {ST_WALK_RED1,      EV_ALL,             ST_WALK_OFF1},
+    {EV_NO_MOVEMENT,     ST_WALK_OFF1},
+    {EV_CARS_EAST,       ST_WALK_OFF1},
+    {EV_CARS_SOUTH,      ST_WALK_OFF1},
+    {EV_BOTH_WAYS,       ST_WALK_OFF1},
+    {EV_WALK_NO_CARS,    ST_WALK_OFF1},
+    {EV_WALK_EAST,       ST_WALK_OFF1},
+    {EV_WALK_SOUTH,      ST_WALK_OFF1},
+    {EV_ALL,             ST_WALK_OFF1},
 };
 
 TransMatrix walk_off1_trans_matrix[] = {
-    {ST_WALK_OFF1,      EV_NO_MOVEMENT,     ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_CARS_EAST,       ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_CARS_SOUTH,      ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_BOTH_WAYS,       ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_WALK_NO_CARS,    ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_WALK_EAST,       ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_WALK_SOUTH,      ST_WALK_RED2},
-    {ST_WALK_OFF1,      EV_ALL,             ST_WALK_RED2},
+    {EV_NO_MOVEMENT,     ST_WALK_RED2},
+    {EV_CARS_EAST,       ST_WALK_RED2},
+    {EV_CARS_SOUTH,      ST_WALK_RED2},
+    {EV_BOTH_WAYS,       ST_WALK_RED2},
+    {EV_WALK_NO_CARS,    ST_WALK_RED2},
+    {EV_WALK_EAST,       ST_WALK_RED2},
+    {EV_WALK_SOUTH,      ST_WALK_RED2},
+    {EV_ALL,             ST_WALK_RED2},
 };
 
 TransMatrix walk_red2_trans_matrix[] = {
-    {ST_WALK_RED2,      EV_NO_MOVEMENT,      ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_CARS_EAST,        ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_CARS_SOUTH,       ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_BOTH_WAYS,        ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_WALK_NO_CARS,     ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_WALK_EAST,        ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_WALK_SOUTH,       ST_WALK_OFF2},
-    {ST_WALK_RED2,      EV_ALL,              ST_WALK_OFF2},
+    {EV_NO_MOVEMENT,      ST_WALK_OFF2},
+    {EV_CARS_EAST,        ST_WALK_OFF2},
+    {EV_CARS_SOUTH,       ST_WALK_OFF2},
+    {EV_BOTH_WAYS,        ST_WALK_OFF2},
+    {EV_WALK_NO_CARS,     ST_WALK_OFF2},
+    {EV_WALK_EAST,        ST_WALK_OFF2},
+    {EV_WALK_SOUTH,       ST_WALK_OFF2},
+    {EV_ALL,              ST_WALK_OFF2},
 
 };
 
 TransMatrix walk_off2_trans_matrix[] = {
-    {ST_WALK_OFF2,      EV_NO_MOVEMENT,       ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_CARS_EAST,         ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_CARS_SOUTH,        ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_BOTH_WAYS,         ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_WALK_NO_CARS,      ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_WALK_EAST,         ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_WALK_SOUTH,        ST_WALK_RED3},
-    {ST_WALK_OFF2,      EV_ALL,               ST_WALK_RED3},
+    {EV_NO_MOVEMENT,       ST_WALK_RED3},
+    {EV_CARS_EAST,         ST_WALK_RED3},
+    {EV_CARS_SOUTH,        ST_WALK_RED3},
+    {EV_BOTH_WAYS,         ST_WALK_RED3},
+    {EV_WALK_NO_CARS,      ST_WALK_RED3},
+    {EV_WALK_EAST,         ST_WALK_RED3},
+    {EV_WALK_SOUTH,        ST_WALK_RED3},
+    {EV_ALL,               ST_WALK_RED3},
 };
 
 TransMatrix walk_red3_trans_matrix[] = {
-    {ST_WALK_RED3,      EV_NO_MOVEMENT,        ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_CARS_EAST,          ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_CARS_SOUTH,         ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_BOTH_WAYS,          ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_WALK_NO_CARS,       ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_WALK_EAST,          ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_WALK_SOUTH,         ST_WALK_OFF3},
-    {ST_WALK_RED3,      EV_ALL,                ST_WALK_OFF3},
+    {EV_NO_MOVEMENT,        ST_WALK_OFF3},
+    {EV_CARS_EAST,          ST_WALK_OFF3},
+    {EV_CARS_SOUTH,         ST_WALK_OFF3},
+    {EV_BOTH_WAYS,          ST_WALK_OFF3},
+    {EV_WALK_NO_CARS,       ST_WALK_OFF3},
+    {EV_WALK_EAST,          ST_WALK_OFF3},
+    {EV_WALK_SOUTH,         ST_WALK_OFF3},
+    {EV_ALL,                ST_WALK_OFF3},
 };
 
 TransMatrix walk_off3_trans_matrix[] = {
-    {ST_WALK_OFF3,      EV_NO_MOVEMENT,         ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_CARS_EAST,           ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_CARS_SOUTH,          ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_BOTH_WAYS,           ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_WALK_NO_CARS,        ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_WALK_EAST,           ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_WALK_SOUTH,          ST_WALK_RED},
-    {ST_WALK_OFF3,      EV_ALL,                 ST_WALK_RED},
+    {EV_NO_MOVEMENT,         ST_WALK_RED},
+    {EV_CARS_EAST,           ST_WALK_RED},
+    {EV_CARS_SOUTH,          ST_WALK_RED},
+    {EV_BOTH_WAYS,           ST_WALK_RED},
+    {EV_WALK_NO_CARS,        ST_WALK_RED},
+    {EV_WALK_EAST,           ST_WALK_RED},
+    {EV_WALK_SOUTH,          ST_WALK_RED},
+    {EV_ALL,                 ST_WALK_RED},
 };
 
 TransMatrix walk_red_trans_matrix[] = {
-    {ST_WALK_RED,       EV_NO_MOVEMENT,         ST_GO_SOUTH},
-    {ST_WALK_RED,       EV_CARS_EAST,           ST_GO_EAST},
-    {ST_WALK_RED,       EV_CARS_SOUTH,          ST_GO_SOUTH},
-    {ST_WALK_RED,       EV_BOTH_WAYS,           ST_GO_SOUTH},
-    {ST_WALK_RED,       EV_WALK_NO_CARS,        ST_GO_SOUTH},
-    {ST_WALK_RED,       EV_WALK_EAST,           ST_GO_EAST},
-    {ST_WALK_RED,       EV_WALK_SOUTH,          ST_GO_SOUTH},
-    {ST_WALK_RED,       EV_ALL,                 ST_GO_SOUTH},
+    {EV_NO_MOVEMENT,         ST_GO_SOUTH},
+    {EV_CARS_EAST,           ST_GO_EAST},
+    {EV_CARS_SOUTH,          ST_GO_SOUTH},
+    {EV_BOTH_WAYS,           ST_GO_SOUTH},
+    {EV_WALK_NO_CARS,        ST_GO_SOUTH},
+    {EV_WALK_EAST,           ST_GO_EAST},
+    {EV_WALK_SOUTH,          ST_GO_SOUTH},
+    {EV_ALL,                 ST_GO_SOUTH},
 };
 
 TransMatrix *trans_matrix[] = {
@@ -210,16 +213,16 @@ TransMatrix *trans_matrix[] = {
     walk_red_trans_matrix
 };
 StateMachine traffic_light[] = {
-    {ST_GO_SOUTH,       system_out,     GO_SOUTH,       LIGHTS_DELAY},
-    {ST_WAIT_SOUTH,     system_out,     WAIT_SOUTH,     LIGHTS_DELAY},
-    {ST_GO_EAST,        system_out,     GO_EAST,        LIGHTS_DELAY},
-    {ST_WAIT_EAST,      system_out,     WAIT_EAST,      LIGHTS_DELAY},
-    {ST_WALK_GREEN,     system_out,     WALK_GREEN,     LIGHTS_DELAY},
-    {ST_WALK_RED1,      system_out,     WALK_RED1,      FLASHING_DELAY},
-    {ST_WALK_OFF1,      system_out,     WALK_OFF1,      FLASHING_DELAY},
-    {ST_WALK_RED2,      system_out,     WALK_RED2,      FLASHING_DELAY},
-    {ST_WALK_OFF2,      system_out,     WALK_OFF2,      FLASHING_DELAY},
-    {ST_WALK_RED3,      system_out,     WALK_RED3,      FLASHING_DELAY},
-    {ST_WALK_OFF3,      system_out,     WALK_OFF3,      FLASHING_DELAY},
-    {ST_WALK_RED,       system_out,     WALK_RED,       LIGHTS_DELAY},
+    {ST_GO_SOUTH,   system_out, GO_SOUTH,   SysTick_wait_10ms, LIGHTS_DELAY},
+    {ST_WAIT_SOUTH, system_out, WAIT_SOUTH, SysTick_wait_10ms, LIGHTS_DELAY},
+    {ST_GO_EAST,    system_out, GO_EAST,    SysTick_wait_10ms, LIGHTS_DELAY},
+    {ST_WAIT_EAST,  system_out, WAIT_EAST,  SysTick_wait_10ms, LIGHTS_DELAY},
+    {ST_WALK_GREEN, system_out, WALK_GREEN, SysTick_wait_10ms, LIGHTS_DELAY},
+    {ST_WALK_RED1,  system_out, WALK_RED1,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_OFF1,  system_out, WALK_OFF1,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_RED2,  system_out, WALK_RED2,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_OFF2,  system_out, WALK_OFF2,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_RED3,  system_out, WALK_RED3,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_OFF3,  system_out, WALK_OFF3,  SysTick_wait_10ms, FLASHING_DELAY},
+    {ST_WALK_RED,   system_out, WALK_RED,   SysTick_wait_10ms, LIGHTS_DELAY},
 };
